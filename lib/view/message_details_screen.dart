@@ -98,7 +98,7 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
             onlineStatus != null
                 ? onlineStatus!.onlineStatus
                     ? const Text(
-                        "Active",
+                        "Online",
                         style: TextStyle(fontSize: 10),
                       )
                     : Text(
