@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "332576346680",
+    "project_id": "chatapplication-d1ad8",
+    "storage_bucket": "chatapplication-d1ad8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332576346680:android:1899512ee2b2243ff68ccd",
+        "android_client_info": {
+          "package_name": "com.chat.teamlance.firebase_chat_application"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "332576346680-dqcbrc75kgr6jarmdvlc5og3orur3j2m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chat.teamlance.firebase_chat_application",
+            "certificate_hash": "959dc7423c587498ae627ddac69fcdc8ebb5c886"
+          }
+        },
+        {
+          "client_id": "332576346680-l29vvn40af36og0nvbad39ja03q6c4b6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgS-R6CNJtZtIm_JYqUvJKNg3U0SEGU4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "332576346680-l29vvn40af36og0nvbad39ja03q6c4b6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
