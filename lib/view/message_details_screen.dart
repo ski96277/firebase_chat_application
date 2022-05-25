@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_chat_application/firebaseQuery/firebase_quiery.dart';
@@ -7,7 +8,10 @@ import 'package:firebase_chat_application/model/onlineStatus.dart';
 import 'package:firebase_chat_application/model/room_info.dart';
 import 'package:firebase_chat_application/model/user_info.dart';
 import 'package:firebase_chat_application/pref/pref_const.dart';
+import 'package:firebase_chat_application/widget/utils.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 
 class MessageDetailsScreen extends StatefulWidget {
   late UserInfoDetails senderDetails;
@@ -21,12 +25,14 @@ class MessageDetailsScreen extends StatefulWidget {
 class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
   TextEditingController messageController = TextEditingController();
   bool messageHistoryLoading = true;
+  late File imagePath;
+  Reference storageReference = FirebaseStorage.instance.ref("gs://my-custom-bucket");
 
   List<MessageModel> messageModelList = [];
   RoomInfo? roomInfo;
 
   OnlineStatus? onlineStatus;
-  bool updateCall=false;
+  bool updateCall = false;
 
   @override
   void initState() {
@@ -165,17 +171,155 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
               hintText: "Write your message",
             ),
           ),
+          messageController.text.isEmpty
+              ? IconButton(
+                  onPressed: () async {
+                    showModalBottomSheet<void>(
+                      context: this.context,
+                      builder: (BuildContext context) {
+                        return Container(
+                          height: 200,
+                          color: Colors.green[200],
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                InkWell(
+                                  onTap: () async {
+                                    Navigator.pop(context);
+
+                                    imagePath = await AppUtils.getImageFromGallery();
+                                    log("imagepath from gallery = ${imagePath.path}");
+
+                                    String fileName = basename(imagePath.path);
+                                    Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/' + fileName);
+                                    UploadTask uploadTask = firebaseStorageRef.putFile(imagePath);
+                                    var imageUrl = await (await uploadTask).ref.getDownloadURL();
+
+                                    log("imagepath from gallery = ${imageUrl}");
+
+                                    FirebaseQuiery.sendMessage(
+                                        messageString: imageUrl,
+                                        receiverID: widget.senderDetails.uID,
+                                        receiverName: widget.senderDetails.name,
+                                        roomInfoObj: roomInfo,
+                                        messageType: 2);
+                                  },
+                                  child: InkWell(
+                                    onTap: () async {
+
+                                      Navigator.pop(context);
+
+                                      imagePath = await AppUtils.getImageFromCamera();
+                                      log("imagepath from gallery = ${imagePath.path}");
+
+                                      String fileName = basename(imagePath.path);
+                                      Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/' + fileName);
+                                      UploadTask uploadTask = firebaseStorageRef.putFile(imagePath);
+                                      var imageUrl = await (await uploadTask).ref.getDownloadURL();
+
+                                      log("imagepath from gallery = ${imageUrl}");
+
+                                      FirebaseQuiery.sendMessage(
+                                          messageString: imageUrl,
+                                          receiverID: widget.senderDetails.uID,
+                                          receiverName: widget.senderDetails.name,
+                                          roomInfoObj: roomInfo,
+                                          messageType: 2);
+                                    },
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: const [
+                                        Icon(
+                                          Icons.camera,
+                                          size: 34,
+                                        ),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text("Gallery")
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 50,
+                                ),
+                                InkWell(
+                                  onTap: () async {
+                                    imagePath = await AppUtils.getImageFromCamera();
+                                    log("imagepath from camera = ${imagePath.path}");
+                                    Navigator.pop(context);
+
+                                    String fileName = basename(imagePath.path);
+                                    Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/' + fileName);
+                                    UploadTask uploadTask = firebaseStorageRef.putFile(imagePath);
+                                    var imageUrl = await (await uploadTask).ref.getDownloadURL();
+
+                                    log("imagepath from camera = ${imageUrl}");
+
+                                    FirebaseQuiery.sendMessage(
+                                        messageString: imageUrl,
+                                        receiverID: widget.senderDetails.uID,
+                                        receiverName: widget.senderDetails.name,
+                                        roomInfoObj: roomInfo,
+                                        messageType: 2);
+
+                                  },
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: const [
+                                      Icon(
+                                        Icons.camera_alt,
+                                        size: 34,
+                                      ),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text("Camera")
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+
+                    // File imageFile= await AppUtils.getImageFromGallery();
+                    //
+                    //
+                    //
+                    // //Upload the file to firebase
+                    // UploadTask uploadTask = storageReference.child("images/").child("${FirebaseAuth.instance.currentUser!.uid}/"+DateTime.now().toString()).putFile(imageFile);
+                    //
+                  },
+                  icon: const Icon(
+                    Icons.attach_file,
+                    color: Colors.lightBlue,
+                    size: 25,
+                  ))
+              : const SizedBox(),
           IconButton(
               onPressed: () {
                 if (messageController.text.isNotEmpty) {
-                  FirebaseQuiery.sendMessage(messageController.text, widget.senderDetails.uID,widget.senderDetails.name, roomInfo);
+                  FirebaseQuiery.sendMessage(
+                      messageString: messageController.text,
+                      receiverID: widget.senderDetails.uID,
+                      receiverName: widget.senderDetails.name,
+                      roomInfoObj: roomInfo,
+                      messageType: 1);
                   messageController.text = "";
                 }
               },
               icon: const Icon(
                 Icons.send_rounded,
                 color: Colors.lightBlue,
-                size: 35,
+                size: 30,
               ))
         ],
       ),
@@ -220,20 +364,32 @@ class ChatRoomItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              RichText(
-                text: TextSpan(
-                  children: <TextSpan>[
-                    TextSpan(
-                      text: messageModelList[index].messageText,
-                      style: const TextStyle(fontSize: 15, color: Colors.black),
-                    ),
-                    const TextSpan(text: "   "),
-                    TextSpan(
-                      text: FirebaseQuiery.getTimeAgo(messageModelList[index].createdAt),
-                      style: const TextStyle(fontSize: 13, color: Colors.grey),
-                    ),
-                  ],
-                ),
+              messageModelList[index].messageType == 1
+                  ? Text(
+                      messageModelList[index].messageText + " ",
+                      maxLines: 10,
+                      style: const TextStyle(fontSize: 15, color: Colors.black, overflow: TextOverflow.ellipsis),
+                    )
+                  : messageModelList[index].messageType == 2
+                      ? FadeInImage.assetNetwork(
+                          placeholder: "assets/icon/profile.png",
+                          imageErrorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              "assets/icon/profile.png",
+                              fit: BoxFit.cover,
+                              height: 50.0,
+                              width: 50,
+                            );
+                          },
+                          fit: BoxFit.cover,
+                          height: 50.0,
+                          width: 50,
+                          image: messageModelList[index].messageText,
+                        )
+                      : const SizedBox(),
+              Text(
+                FirebaseQuiery.getTimeAgo(messageModelList[index].createdAt),
+                style: const TextStyle(fontSize: 13, color: Colors.grey),
               ),
               Icon(
                 messageModelList[index].isSeenIs ? Icons.check_circle_rounded : Icons.check_circle,
@@ -289,11 +445,11 @@ class CustomTextField extends StatelessWidget {
       readOnly: readOnly,
       obscureText: obscureText,
       decoration: InputDecoration(
-        prefixIcon: leadingIcon != null ? leadingIcon : null,
-        suffixIcon: suffixIcon != null ? suffixIcon : null,
+        prefixIcon: leadingIcon,
+        suffixIcon: suffixIcon,
         border: InputBorder.none,
         hintText: hintText,
-        hintStyle: TextStyle(color: Colors.grey, fontSize: 15),
+        hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
         labelText: labelText,
         errorText: validatedField ? null : errorText,
       ),

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_chat_application/widget/circular_image.dart';
 import 'package:flutter/material.dart';
 
@@ -5,11 +7,13 @@ class ChatListItem extends StatelessWidget {
   String? title;
   String? subTile;
   int? unReadMessage;
+  int? messageType;
 
-  ChatListItem({this.title, this.subTile, this.unReadMessage});
+  ChatListItem({this.title, this.subTile, this.unReadMessage, this.messageType});
 
   @override
   Widget build(BuildContext context) {
+    log("message messageType =  $messageType");
     return Container(
       decoration: BoxDecoration(color: unReadMessage! > 0 ? Colors.grey[350] : Colors.grey[200], borderRadius: const BorderRadius.all(Radius.circular(10))),
       margin: const EdgeInsets.all(10),
@@ -27,7 +31,7 @@ class ChatListItem extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
-                subTile!,
+                messageType==1?subTile!:"sent an image",
                 style: const TextStyle(fontWeight: FontWeight.normal),
               ),
             ],

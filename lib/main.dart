@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_chat_application/firebaseQuery/firebase_quiery.dart';
@@ -13,6 +14,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await GetStorage.init();
+  // FirebaseAuth.instance.setSettings()
+  FirebaseFirestore.instance.settings =
+      const Settings(
+          persistenceEnabled: false,
+          // cacheSizeBytes: ,//is it need add this fields too?
+          // host: ?,
+          // sslEnabled: ?
+      );
   await FirebaseAppCheck.instance.activate(
       // webRecaptchaSiteKey: 'recaptcha-v3-site-key',
       );

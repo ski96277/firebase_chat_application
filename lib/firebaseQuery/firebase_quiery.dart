@@ -36,12 +36,15 @@ class FirebaseQuiery {
   }
 
   static getRoomInfoList(Function(List<RoomInfo> roomInfoList) roomInfoList) {
+    List<RoomInfo> roomInfoListLocal = [];
     firebaseFirestore.collection("roomInfo").where("roomUsersID", arrayContains: FirebaseAuth.instance.currentUser!.uid).snapshots().listen((value) {
       log("Collection found ${value.docs.length}");
 
-      List<RoomInfo> roomInfoListLocal = [];
+      roomInfoListLocal = [];
       for (var element in value.docs) {
+        log("Collection found message type ${element.get("messageType")}");
         log("Collection found ${element.get("lastMessage")}");
+        log("Collection found ${element.get('roomID')}");
 
         RoomInfo roomInfo = RoomInfo(
             uID: element.get("uID"),
@@ -67,7 +70,7 @@ class FirebaseQuiery {
     });
   }
 
-  static sendMessage(String messageString, String receiverID, String receiverName, RoomInfo? roomInfoObj) {
+  static sendMessage({required String messageString, required String receiverID, required String receiverName, RoomInfo? roomInfoObj, int messageType = 1}) {
     log("send message room info is = $roomInfoObj");
 
     if (roomInfoObj != null) {
@@ -80,7 +83,7 @@ class FirebaseQuiery {
           lastMessageID: messagesAutoID,
           senderID: userID!,
           receiverID: receiverID,
-          messageType: roomInfoObj.messageType,
+          messageType: messageType,
           unReadMessage: roomInfoObj.senderID == userID ? roomInfoObj.unReadMessage + 1 : 1,
           senderName: myName,
           receiverName: receiverName,
@@ -95,14 +98,14 @@ class FirebaseQuiery {
       log("messages sent 3");
 
       firebaseFirestore.collection("roomInfo").doc(roomInfo.roomID).update(roomInfo.toMap()).then((value) {
-        createMessage(receiverName, receiverID, messageString, messagesAutoID, roomInfo.roomID);
+        createMessage(receiverName, receiverID, messageString, messagesAutoID, roomInfo.roomID,messageType);
       });
     } else {
-      createNewChatInfo(messageString, receiverID, receiverName);
+      createNewChatInfo(messageString, receiverID, receiverName,messageType);
     }
   }
 
-  static void createNewChatInfo(String messageString, String receiverID, String receiverName) {
+  static void createNewChatInfo(String messageString, String receiverID, String receiverName, int messageType) {
     String messageRoomAutoID = firebaseFirestore.collection("messageRoom").doc().id;
     String messagesAutoID = firebaseFirestore.collection("messageRoom").doc(messageRoomAutoID).collection("messages").doc().id;
 
@@ -115,7 +118,7 @@ class FirebaseQuiery {
         lastMessage: messageString,
         lastMessageID: messagesAutoID,
         senderID: FirebaseAuth.instance.currentUser!.uid,
-        messageType: 1,
+        messageType: messageType,
         unReadMessage: 1,
         senderName: myName,
         senderImage: "",
@@ -131,18 +134,18 @@ class FirebaseQuiery {
     log("messages sent = 1");
 
     firebaseFirestore.collection("roomInfo").doc(messageRoomAutoID).set(roomInfoSender.toMap()).then((value) {
-      createMessage(receiverName, receiverID, messageString, messagesAutoID, messageRoomAutoID);
+      createMessage(receiverName, receiverID, messageString, messagesAutoID, messageRoomAutoID,messageType);
     });
   }
 
-  static void createMessage(String receiverName, String receiverID, String messageString, String messagesAutoID, String messageRoomAutoID) {
+  static void createMessage(String receiverName, String receiverID, String messageString, String messagesAutoID, String messageRoomAutoID, int messageType) {
     MessageModel messageModel = MessageModel(
         senderID: FirebaseAuth.instance.currentUser!.uid,
         receiverID: receiverID,
         userName: myName,
         roomId: messageRoomAutoID,
         messageText: messageString,
-        messageType: 1,
+        messageType: messageType,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         deletedAt: Timestamp.now(),

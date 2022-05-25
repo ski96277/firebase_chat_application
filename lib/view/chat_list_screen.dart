@@ -58,6 +58,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       title: roomInfoList[index].senderID == FirebaseAuth.instance.currentUser!.uid ? roomInfoList[index].receiverName : roomInfoList[index].senderName,
                       subTile: roomInfoList[index].lastMessage,
                       unReadMessage: roomInfoList[index].senderID == FirebaseAuth.instance.currentUser!.uid ? 0 : roomInfoList[index].unReadMessage,
+                      messageType: roomInfoList[index].messageType,
+
                     ),
                   );
                 },
