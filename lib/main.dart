@@ -18,9 +18,6 @@ Future<void> main() async {
   FirebaseFirestore.instance.settings =
       const Settings(
           persistenceEnabled: false,
-          // cacheSizeBytes: ,//is it need add this fields too?
-          // host: ?,
-          // sslEnabled: ?
       );
   await FirebaseAppCheck.instance.activate(
       // webRecaptchaSiteKey: 'recaptcha-v3-site-key',
@@ -40,7 +37,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    print("initState");
+    log("initState");
     FirebaseQuiery.onlineStatusUpdate(true);
 
   }
@@ -92,7 +89,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void deactivate() {
     // TODO: implement deactivate
-    print("deactivate");
+    log("deactivate");
     super.deactivate();
   }
 

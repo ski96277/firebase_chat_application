@@ -206,42 +206,19 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
                                         roomInfoObj: roomInfo,
                                         messageType: 2);
                                   },
-                                  child: InkWell(
-                                    onTap: () async {
-
-                                      Navigator.pop(context);
-
-                                      imagePath = await AppUtils.getImageFromCamera();
-                                      log("imagepath from gallery = ${imagePath.path}");
-
-                                      String fileName = basename(imagePath.path);
-                                      Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/' + fileName);
-                                      UploadTask uploadTask = firebaseStorageRef.putFile(imagePath);
-                                      var imageUrl = await (await uploadTask).ref.getDownloadURL();
-
-                                      log("imagepath from gallery = ${imageUrl}");
-
-                                      FirebaseQuiery.sendMessage(
-                                          messageString: imageUrl,
-                                          receiverID: widget.senderDetails.uID,
-                                          receiverName: widget.senderDetails.name,
-                                          roomInfoObj: roomInfo,
-                                          messageType: 2);
-                                    },
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: const [
-                                        Icon(
-                                          Icons.camera,
-                                          size: 34,
-                                        ),
-                                        SizedBox(
-                                          height: 10,
-                                        ),
-                                        Text("Gallery")
-                                      ],
-                                    ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: const [
+                                      Icon(
+                                        Icons.camera,
+                                        size: 34,
+                                      ),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text("Gallery")
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(
@@ -289,14 +266,6 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
                         );
                       },
                     );
-
-                    // File imageFile= await AppUtils.getImageFromGallery();
-                    //
-                    //
-                    //
-                    // //Upload the file to firebase
-                    // UploadTask uploadTask = storageReference.child("images/").child("${FirebaseAuth.instance.currentUser!.uid}/"+DateTime.now().toString()).putFile(imageFile);
-                    //
                   },
                   icon: const Icon(
                     Icons.attach_file,
@@ -336,10 +305,10 @@ class ChatRoomItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: const EdgeInsets.all(5.0), child: getPersonalChat());
+    return Padding(padding: const EdgeInsets.all(5.0), child: getPersonalChat(context));
   }
 
-  getPersonalChat() {
+  getPersonalChat(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisAlignment: messageModelList[index].senderID == _firebaseAuth.currentUser!.uid ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -347,18 +316,10 @@ class ChatRoomItem extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
+            color: Colors.grey[400],
             borderRadius: messageModelList[index].senderID == _firebaseAuth.currentUser!.uid
                 ? const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20), bottomLeft: Radius.circular(20))
                 : const BorderRadius.only(topLeft: Radius.circular(0), topRight: Radius.circular(20), bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 1,
-                blurRadius: 1,
-                offset: const Offset(0, 1), // changes position of shadow
-              ),
-            ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -371,35 +332,109 @@ class ChatRoomItem extends StatelessWidget {
                       style: const TextStyle(fontSize: 15, color: Colors.black, overflow: TextOverflow.ellipsis),
                     )
                   : messageModelList[index].messageType == 2
-                      ? FadeInImage.assetNetwork(
-                          placeholder: "assets/icon/profile.png",
-                          imageErrorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              "assets/icon/profile.png",
-                              fit: BoxFit.cover,
-                              height: 50.0,
-                              width: 50,
-                            );
+                      ? InkWell(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => FunkyOverlay(messageModelList[index].messageText)));
+
+                            // showDialog(
+                            //   barrierDismissible: true,
+                            //   context: context,
+                            //   builder: (_) => FunkyOverlay(messageModelList[index].messageText),
+                            // );
                           },
-                          fit: BoxFit.cover,
-                          height: 50.0,
-                          width: 50,
-                          image: messageModelList[index].messageText,
+                          child: FadeInImage.assetNetwork(
+                            placeholder: "assets/icon/profile.png",
+                            imageErrorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                "assets/icon/profile.png",
+                                fit: BoxFit.cover,
+                                height: 50.0,
+                                width: 50,
+                              );
+                            },
+                            fit: BoxFit.cover,
+                            height: 200,
+                            width: 200,
+                            image: messageModelList[index].messageText,
+                          ),
                         )
                       : const SizedBox(),
               Text(
                 FirebaseQuiery.getTimeAgo(messageModelList[index].createdAt),
                 style: const TextStyle(fontSize: 13, color: Colors.grey),
               ),
-              Icon(
-                messageModelList[index].isSeenIs ? Icons.check_circle_rounded : Icons.check_circle,
-                size: 12,
-                color: messageModelList[index].isSeenIs ? Colors.green : Colors.grey,
-              )
+              messageModelList[index].senderID == _firebaseAuth.currentUser!.uid
+                  ? Icon(
+                      messageModelList[index].isSeenIs ? Icons.check_circle_rounded : Icons.check_circle,
+                      size: 12,
+                      color: messageModelList[index].isSeenIs ? Colors.green : Colors.grey,
+                    )
+                  : const SizedBox()
             ],
           ),
         )
       ],
+    );
+  }
+}
+
+class FunkyOverlay extends StatefulWidget {
+  String imageUrl;
+
+  FunkyOverlay(this.imageUrl);
+
+  @override
+  State<StatefulWidget> createState() => FunkyOverlayState();
+}
+
+class FunkyOverlayState extends State<FunkyOverlay> with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+  late Animation<double> scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
+    scaleAnimation = CurvedAnimation(parent: controller, curve: Curves.elasticInOut);
+
+    controller.addListener(() {
+      setState(() {});
+    });
+
+    controller.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: ScaleTransition(
+        scale: scaleAnimation,
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.height,
+          decoration: ShapeDecoration(color: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1.0))),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: FadeInImage.assetNetwork(
+              placeholder: "assets/icon/profile.png",
+              imageErrorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  "assets/icon/profile.png",
+                  fit: BoxFit.cover,
+                  height: 50.0,
+                  width: 50,
+                );
+              },
+              fit: BoxFit.contain,
+              height: 200,
+              width: 200,
+              image: widget.imageUrl,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
