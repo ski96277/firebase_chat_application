@@ -229,7 +229,8 @@ class FirebaseQuiery {
                             video: element.get('video'),
                             audio: element.get('audio'),
                             isSeenTime: element.get('isSeenTime'),
-                            messageID: element.get('messageID')));
+                            messageID: element.get('messageID'),
+                            loadingStatus: false));
                       }
 
                       messageModel(messageModelListLocal);

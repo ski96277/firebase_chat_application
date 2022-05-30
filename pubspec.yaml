@@ -43,6 +43,8 @@ dependencies:
   timeago: ^3.2.2
   image_picker: ^0.8.5+3
   firebase_storage: ^10.2.16
+  camera_with_files: ^0.0.11
+
 
 
 dev_dependencies:

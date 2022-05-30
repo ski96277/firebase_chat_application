@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_chat_application/firebaseQuery/firebase_quiery.dart';
 import 'package:firebase_chat_application/model/message_model.dart';
@@ -94,7 +95,7 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[350],
+      backgroundColor: Colors.grey[300],
       appBar: AppBar(
         title: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -119,7 +120,7 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
         ),
       ),
       body: Container(
-        color: Colors.grey[350],
+        // color: Colors.grey[350],
         margin: const EdgeInsets.only(bottom: 80),
         child: Padding(
             padding: const EdgeInsets.only(
@@ -191,8 +192,29 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
 
                                     imagePath = await AppUtils.getImageFromGallery();
                                     log("imagepath from gallery = ${imagePath.path}");
-
                                     String fileName = basename(imagePath.path);
+//local list update
+                                    messageModelList.add(MessageModel(
+                                        senderID: FirebaseAuth.instance.currentUser!.uid,
+                                        receiverID:  widget.senderDetails.uID,
+                                        userName: "",
+                                        roomId: "",
+                                        messageText: imagePath.path,
+                                        messageType: 2,
+                                        createdAt: Timestamp.now(),
+                                        updatedAt: Timestamp.now(),
+                                        deletedAt: Timestamp.now(),
+                                        isDeleted: false,
+                                        isSeenIs: false,
+                                        image: "",
+                                        video: "",
+                                        audio: "",
+                                        isSeenTime: Timestamp.now(),
+                                        messageID: "",
+                                        loadingStatus: true));
+                                    setState((){});
+                                    // local list update end
+
                                     Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/' + fileName);
                                     UploadTask uploadTask = firebaseStorageRef.putFile(imagePath);
                                     var imageUrl = await (await uploadTask).ref.getDownloadURL();
@@ -231,6 +253,30 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
                                     Navigator.pop(context);
 
                                     String fileName = basename(imagePath.path);
+                                    //local list update
+
+                                    messageModelList.add(MessageModel(
+                                        senderID: FirebaseAuth.instance.currentUser!.uid,
+                                        receiverID:  widget.senderDetails.uID,
+                                        userName: "",
+                                        roomId: "",
+                                        messageText: imagePath.path,
+                                        messageType: 2,
+                                        createdAt: Timestamp.now(),
+                                        updatedAt: Timestamp.now(),
+                                        deletedAt: Timestamp.now(),
+                                        isDeleted: false,
+                                        isSeenIs: false,
+                                        image: "",
+                                        video: "",
+                                        audio: "",
+                                        isSeenTime: Timestamp.now(),
+                                        messageID: "",
+                                        loadingStatus: true));
+                                    setState((){});
+
+                                    //local list update end
+
                                     Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('images/' + fileName);
                                     UploadTask uploadTask = firebaseStorageRef.putFile(imagePath);
                                     var imageUrl = await (await uploadTask).ref.getDownloadURL();
@@ -276,6 +322,29 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
           IconButton(
               onPressed: () {
                 if (messageController.text.isNotEmpty) {
+
+                  //local text list update
+                  messageModelList.add(MessageModel(
+                      senderID: FirebaseAuth.instance.currentUser!.uid,
+                      receiverID:  widget.senderDetails.uID,
+                      userName: "",
+                      roomId: "",
+                      messageText: messageController.text,
+                      messageType: 1,
+                      createdAt: Timestamp.now(),
+                      updatedAt: Timestamp.now(),
+                      deletedAt: Timestamp.now(),
+                      isDeleted: false,
+                      isSeenIs: false,
+                      image: "",
+                      video: "",
+                      audio: "",
+                      isSeenTime: Timestamp.now(),
+                      messageID: "",
+                      loadingStatus: true));
+                  setState((){});
+                  // local test list update end
+
                   FirebaseQuiery.sendMessage(
                       messageString: messageController.text,
                       receiverID: widget.senderDetails.uID,
@@ -314,9 +383,9 @@ class ChatRoomItem extends StatelessWidget {
       mainAxisAlignment: messageModelList[index].senderID == _firebaseAuth.currentUser!.uid ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: Colors.grey[400],
+            color: Colors.grey[350],
             borderRadius: messageModelList[index].senderID == _firebaseAuth.currentUser!.uid
                 ? const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20), bottomLeft: Radius.circular(20))
                 : const BorderRadius.only(topLeft: Radius.circular(0), topRight: Radius.circular(20), bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
@@ -336,35 +405,33 @@ class ChatRoomItem extends StatelessWidget {
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => FunkyOverlay(messageModelList[index].messageText)));
 
-                            // showDialog(
-                            //   barrierDismissible: true,
-                            //   context: context,
-                            //   builder: (_) => FunkyOverlay(messageModelList[index].messageText),
-                            // );
                           },
-                          child: FadeInImage.assetNetwork(
-                            placeholder: "assets/icon/profile.png",
-                            imageErrorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                "assets/icon/profile.png",
-                                fit: BoxFit.cover,
-                                height: 50.0,
-                                width: 50,
-                              );
-                            },
-                            fit: BoxFit.cover,
-                            height: 200,
-                            width: 200,
-                            image: messageModelList[index].messageText,
+                          child:ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: FadeInImage.assetNetwork(
+                              placeholder: "assets/icon/image_loader_icon.png",
+                              imageErrorBuilder: (context, error, stackTrace) {
+                                return messageModelList[index].loadingStatus?Image.file(File(messageModelList[index].messageText),width: 200,height: 200,fit: BoxFit.cover,): Image.asset(
+                                  "assets/icon/image_load_error.png",
+                                  fit: BoxFit.cover,
+                                  height: 50.0,
+                                  width: 50,
+                                );
+                              },
+                              fit: BoxFit.cover,
+                              height: 200,
+                              width: 200,
+                              image: messageModelList[index].messageText,
+                            ),
                           ),
                         )
                       : const SizedBox(),
-              Text(
+              messageModelList[index].loadingStatus?const SizedBox(width:8,height: 8,child: CircularProgressIndicator(strokeWidth: 1,color: Colors.grey,)):Text(
                 FirebaseQuiery.getTimeAgo(messageModelList[index].createdAt),
                 style: const TextStyle(fontSize: 13, color: Colors.grey),
               ),
               messageModelList[index].senderID == _firebaseAuth.currentUser!.uid
-                  ? Icon(
+                  ?messageModelList[index].loadingStatus?const SizedBox(): Icon(
                       messageModelList[index].isSeenIs ? Icons.check_circle_rounded : Icons.check_circle,
                       size: 12,
                       color: messageModelList[index].isSeenIs ? Colors.green : Colors.grey,

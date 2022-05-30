@@ -19,6 +19,7 @@ class MessageModel {
   final String userName;
   final String roomId;
   final String messageID;
+  final bool loadingStatus;
 
 
   const MessageModel({
@@ -38,6 +39,7 @@ class MessageModel {
     required this.audio,
     required this.isSeenTime,
     required this.messageID,
+    this.loadingStatus=false,
   });
 
   static MessageModel fromJson(Map<String, dynamic> json) => MessageModel(
