@@ -24,14 +24,14 @@ class AppUtils{
   static Future<File> getImageFromGallery() async {
 
     File _image;
-    PickedFile? pickedFile = await ImagePicker().getImage(source: ImageSource.gallery,imageQuality: 10);
+    XFile? pickedFile = (await ImagePicker().pickImage(source: ImageSource.gallery,preferredCameraDevice: CameraDevice.rear,imageQuality: 10)) ;
     _image = File(pickedFile!.path);
     print('_image:: $_image');
     return _image;
   }
   static Future<File> getImageFromCamera() async {
     File _image;
-    PickedFile? pickedFile = await ImagePicker().getImage(source: ImageSource.camera,imageQuality: 10);
+    XFile? pickedFile = await ImagePicker().pickImage(source: ImageSource.camera,imageQuality: 10);
     _image = File(pickedFile!.path);
 
     return _image;

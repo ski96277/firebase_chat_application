@@ -248,6 +248,8 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
                                 ),
                                 InkWell(
                                   onTap: () async {
+
+                                    /*
                                     imagePath = await AppUtils.getImageFromCamera();
                                     log("imagepath from camera = ${imagePath.path}");
                                     Navigator.pop(context);
@@ -288,7 +290,7 @@ class _MessageDetailsScreenState extends State<MessageDetailsScreen> {
                                         receiverID: widget.senderDetails.uID,
                                         receiverName: widget.senderDetails.name,
                                         roomInfoObj: roomInfo,
-                                        messageType: 2);
+                                        messageType: 2);*/
 
                                   },
                                   child: Column(
